@@ -29,8 +29,11 @@ export const createPatient = createAsyncThunk(
   'patients/create',
   async (patientData, thunkAPI) => {
     try {
-      return await PatientService.createPatient(patientData);
+      const response = await PatientService.createPatient(patientData);
+      console.log('Réponse dans le slice:', response); // Log de la réponse
+      return response;
     } catch (error) {
+      console.error('Erreur dans le slice:', error); // Log de l'erreur
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -40,12 +43,16 @@ export const updatePatient = createAsyncThunk(
   'patients/update',
   async ({ id, patientData }, thunkAPI) => {
     try {
+      console.log('ID envoyé pour mise à jour:', id);
+      console.log('Données envoyées:', patientData);
       return await PatientService.updatePatient(id, patientData);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response.data);
+      console.error('Erreur updatePatient:', error.response);
+      return thunkAPI.rejectWithValue(error.response?.data || 'Erreur inconnue');
     }
   }
 );
+
 
 export const deletePatient = createAsyncThunk(
   'patients/delete',
@@ -90,11 +97,16 @@ const patientSlice = createSlice({
         state.patients.unshift(action.payload);
       })
       .addCase(updatePatient.fulfilled, (state, action) => {
+        console.log('Données renvoyées après update:', action.payload);
+        console.log('ID mis à jour:', action.payload.id);
+        
         const index = state.patients.findIndex(p => p.id === action.payload.id);
         if (index !== -1) {
           state.patients[index] = action.payload;
+        } else {
+          console.warn("Aucun patient trouvé avec cet ID !");
         }
-      })
+      })         
       .addCase(deletePatient.fulfilled, (state, action) => {
         state.patients = state.patients.filter(p => p.id !== action.payload);
       });
