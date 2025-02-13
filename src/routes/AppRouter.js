@@ -1,14 +1,21 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
-import Dashboard from '../pages/Dashboard';
-import PatientsPage from '../pages/PatientsPage';
-import AppointmentsPage from '../pages/AppointmentsPage';
-import PaymentsPage from '../pages/PaymentsPage';
-import ForbiddenPage from '../pages/ForbiddenPage';
-import Navbar from '../components/shared/Navbar';
-import Sidebar from '../components/shared/Sidebar';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import { useSelector } from "react-redux";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
+import Dashboard from "../pages/Dashboard";
+import ForbiddenPage from "../pages/ForbiddenPage";
+import PatientsPage from "../pages/PatientsPage";
+import AppointmentsPage from "../pages/AppointmentsPage";
+import PaymentsPage from "../pages/PaymentsPage";
+
+import Navbar from "../components/shared/Navbar";
+import Sidebar from "../components/shared/Sidebar";
 
 const ProtectedLayout = ({ roles = [] }) => {
   const { user } = useSelector((state) => state.auth);
@@ -44,14 +51,13 @@ const AppRouter = () => {
         <Route path="/forbidden" element={<ForbiddenPage />} />
 
         {/* Protected routes  <Route element={<ProtectedLayout />}></Route> */}
-         
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/patients" element={<PatientsPage />} />
-          <Route path="/appointments" element={<AppointmentsPage />} />
-        
+
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/patients" element={<PatientsPage />} />
+        <Route path="/appointments" element={<AppointmentsPage />} />
 
         {/* Admin-only routes */}
-        <Route element={<ProtectedLayout roles={['Administrateur']} />}>
+        <Route element={<ProtectedLayout roles={["Administrateur"]} />}>
           <Route path="/payments" element={<PaymentsPage />} />
         </Route>
 
