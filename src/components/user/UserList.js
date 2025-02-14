@@ -1,46 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPatients, deletePatient, setCurrentPatient, updatePatient, createPatient } from './../../features/patients/patientsSlice';
-import PatientForm from './PatientForm';
+import { fetchUsers, createUser, setCurrentUser, deleteUser, updateUser  } from '../../features/user/userSlice';
+import UserForm from './UserForm';
 import Modal from '../../components/shared/Modal';
 import ConfirmationDialog from '../../components/shared/ConfirmationDialog';
 
-const PatientList = () => {
+const UserList = () => {
   const dispatch = useDispatch();
-  const { patients, status, pagination } = useSelector(state => state.patients);
+  const { users = [], status, error, pagination = { page: 0, size: 10, totalPages: 1 } } = useSelector((state) => state.users || {});
+
+
+
   const [showForm, setShowForm] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState(null);
+   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const handlePageChange = (newPage) => {
-    dispatch(fetchPatients({ page: newPage, size: pagination.size }));
+    dispatch(fetchUsers({ page: newPage, size: pagination.size }));
   };
-
-  const handleDelete = async () => {
-    if (selectedPatient) {
-      await dispatch(deletePatient(selectedPatient.id));
-      setShowDeleteDialog(false);
-    }
-  };
+  
 
   useEffect(() => {
-  }, [selectedPatient]);
+    dispatch(fetchUsers({ page: pagination.page, size: pagination.size }));
+  }, [dispatch]);
+  
+    
+
+  const handleDelete = async () => {
+    if (selectedUser) {
+      await dispatch(deleteUser(selectedUser.id));
+      dispatch(fetchUsers({ page: pagination.page, size: pagination.size })); // 🔄 Refresh après suppression
+      setShowDeleteDialog(false);
+      setSelectedUser(null); // ✅ Réinitialisation
+    }
+  };
+  
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Gestion des Patients</h1>
+        <h1 className="text-2xl font-bold">Gestion des Utilisateurs</h1>
         <button
           onClick={() => {
-            dispatch(setCurrentPatient(null));  // Reset to create mode
-            setSelectedPatient(null);  // Ensure patient data is cleared
-            setShowForm(true);  // Show the form
+            setSelectedUser(null);
+            setShowForm(true);
           }}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
-          Ajouter un patient
+          Ajouter un utilisateur
         </button>
       </div>
+
+      {status === 'loading' && <p>Chargement...</p>}
+      {error && <p className="text-red-500">{error}</p>}
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -48,35 +60,22 @@ const PatientList = () => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prénom</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adresse</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {patients.map(patient => (
-              <tr key={patient.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{patient.nom}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{patient.prenom}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{patient.adresse}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{patient.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{patient.telephone}</td>
+            {users.map((user) => (
+              <tr key={user.id}>
+                <td className="px-6 py-4 whitespace-nowrap">{user.nom}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.prenom}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
                 <td className="px-6 py-4 whitespace-nowrap space-x-2">
                   <button
                     onClick={() => {
-                      setSelectedPatient(patient);  // Set the patient data for modification
-                      dispatch(setCurrentPatient(patient));  // Set current patient for modification
-                      setShowForm(true);  // Show the form for modification
-                    }}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    Modifier
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setSelectedPatient(patient);  // Set the selected patient for delete
+                      setSelectedUser(user);
                       setShowDeleteDialog(true);
                     }}
                     className="text-red-600 hover:text-red-900"
@@ -109,19 +108,18 @@ const PatientList = () => {
         </button>
       </div>
 
-      {/* Modals */}
       <Modal isOpen={showForm} onClose={() => setShowForm(false)}>
-        <PatientForm
-          patient={selectedPatient} // Pass selected patient data to the form
+        <UserForm
+          user={selectedUser}
           onSubmit={(data) => {
-            if (selectedPatient) {
-              dispatch(updatePatient({ id: selectedPatient.id, patientData: data }));
+            if (selectedUser) {
+              dispatch(updateUser({ id: selectedUser.id, userData: data }));
             } else {
-              dispatch(createPatient(data));
+              dispatch(createUser(data));
             }
-            setShowForm(false);  // Close the form after submit
+            setShowForm(false);
           }}
-          onCancel={() => setShowForm(false)}  // Close the form if cancelled
+          onCancel={() => setShowForm(false)}
         />
       </Modal>
 
@@ -130,10 +128,10 @@ const PatientList = () => {
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Confirmer la suppression"
-        message="Êtes-vous sûr de vouloir supprimer ce patient ?"
+        message="Êtes-vous sûr de vouloir supprimer cet utilisateur ?"
       />
     </div>
   );
 };
 
-export default PatientList;
+export default UserList;

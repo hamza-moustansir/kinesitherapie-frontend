@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
+// Validation schema avec yup
 const schema = yup.object().shape({
   nom: yup.string().required('Le nom est requis'),
   prenom: yup.string().required('Le prénom est requis'),
@@ -14,25 +15,33 @@ const schema = yup.object().shape({
 });
 
 const PatientForm = ({ patient, onSubmit, onCancel }) => {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit: reactHookHandleSubmit, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: patient || {
-      nom: '',
-      prenom: '',
-      email: '',
-      adresse: '',
-      telephone: ''
-    }
+    defaultValues: patient || {} // On commence avec des valeurs par défaut vides
   });
 
+  // Vérification avec log pour déboguer
   useEffect(() => {
-    if (patient) {
-      reset(patient);
+    console.log('Données du patient dans le formulaire :', patient);
+    if (patient && Object.keys(patient).length > 0) {
+      reset(patient); // Réinitialiser les champs du formulaire avec les données du patient
     }
   }, [patient, reset]);
 
+  // Fonction de soumission du formulaire
+  const handleFormSubmit = async (patientData) => {
+    console.log('Données reçues dans le parent:', patientData); // Log des données
+    try {
+      // Ici, tu peux dispatcher une action ou envoyer les données
+      await onSubmit(patientData);
+      alert(patient ? 'Patient mis à jour avec succès!' : 'Patient ajouté avec succès!');
+    } catch (error) {
+      alert(`Erreur: ${error.message}`);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={reactHookHandleSubmit(handleFormSubmit)} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700">Nom</label>
         <input

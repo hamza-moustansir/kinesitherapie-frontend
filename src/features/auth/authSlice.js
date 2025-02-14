@@ -4,7 +4,7 @@ import authService from './authService';
 const initialState = {
   user: authService.getCurrentUser(),
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  error: null
+  error: null,
 };
 
 export const loginUser = createAsyncThunk(
@@ -36,7 +36,7 @@ const authSlice = createSlice({
     logout: (state) => {
       authService.logout();
       state.user = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -46,9 +46,11 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.user = {
+          id: action.payload.id,
           email: action.payload.email,
           role: action.payload.role,
-          loggedIn: true
+          token: action.payload.token,
+          loggedIn: true,
         };
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -61,16 +63,18 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.user = {
+          id: action.payload.id,
           email: action.payload.email,
           role: action.payload.role,
-          loggedIn: false
+          token: action.payload.token,
+          loggedIn: false,
         };
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       });
-  }
+  },
 });
 
 export const { logout } = authSlice.actions;
