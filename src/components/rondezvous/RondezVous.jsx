@@ -146,24 +146,27 @@ const RondezVous = () => {
   const [loading, setLoading] = useState(false);
 
   const checkPatientExists = async (id) => {
-    if (!id) return null; // Return null instead of false
+    if (!id) return null; // Return null if no ID is provided
 
     try {
-      const response = await fetch(`http://localhost:8080/api/patients/${id}`);
-      const data = await response.json();
+        const response = await fetch(`http://localhost:8080/api/patients/${id}`, {
+            credentials: 'include' // Include credentials (cookies, authorization headers, etc.)
+        });
 
-      // If the API returns an error message, the patient does not exist
-      if (data.error_message) {
-        console.log(`Error: ${data.error_message}`);
-        return null;
-      }
+        const data = await response.json();
 
-      return data; // Return the full patient object
+        // If the API returns an error message, the patient does not exist
+        if (data.error_message) {
+            console.log(`Error: ${data.error_message}`);
+            return null;
+        }
+
+        return data; // Return the full patient object
     } catch (error) {
-      console.error("Error checking patient existence:", error);
-      return null; // Return null in case of an error
+        console.error("Error checking patient existence:", error);
+        return null; // Return null in case of an error
     }
-  };
+};
 
   //------------------------------SIDE EFFECTS------------------------------
   useEffect(() => {

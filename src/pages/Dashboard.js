@@ -12,18 +12,25 @@ const Dashboard = () => {
     // Récupérer les données du nombre d'utilisateurs, de patients et de salles
     const fetchCounts = async () => {
       try {
-        // Remplacez les URL par les bonnes routes pour obtenir les comptes
-        const userResponse = await axios.get('http://localhost:8080/api/users/count');
-        const patientResponse = await axios.get('http://localhost:8080/api/patients/count');
-        const salleResponse = await axios.get('http://localhost:8080/api/salles/count');
-
-        setUserCount(userResponse.data.count);  // Si l'API retourne un objet { count: <number> }
-        setPatientCount(patientResponse.data.count);
-        setSalleCount(salleResponse.data.count);
+          // Include credentials in each request
+          const userResponse = await axios.get('http://localhost:8080/api/utilisateurs/count', {
+              withCredentials: true // Include credentials (cookies, authorization headers, etc.)
+          });
+          const patientResponse = await axios.get('http://localhost:8080/api/patients/count', {
+              withCredentials: true
+          });
+          const salleResponse = await axios.get('http://localhost:8080/api/salles/count', {
+              withCredentials: true
+          });
+  
+          // Assuming the API returns an object like { count: <number> }
+          setUserCount(userResponse.data);
+          setPatientCount(patientResponse.data);
+          setSalleCount(salleResponse.data);
       } catch (error) {
-        console.error("Erreur lors de la récupération des données", error);
+          console.error("Erreur lors de la récupération des données", error);
       }
-    };
+  };
 
     fetchCounts();
   }, []);

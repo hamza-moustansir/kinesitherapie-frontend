@@ -7,13 +7,13 @@ import Dashboard from '../pages/Dashboard';
 import PatientsPage from '../pages/PatientsPage';
 import UserPage from '../pages/UserPage';
 import CalendrierPage from '../pages/CalendrierPage';
-import PaymentsPage from '../pages/PaymentsPage';
 import Pass from '../components/auth/Pass';
 import ForbiddenPage from '../pages/ForbiddenPage';
 import Navbar from '../components/shared/Navbar';
 import Sidebar from '../components/shared/Sidebar';
 import DashboardPage from '../pages/DashboardPage'; // Importer DashboardPage
 import SallePage from '../pages/SallePage';
+import RondezVous from '../components/rondezvous/RondezVous';
 
 const ProtectedLayout = ({ roles = [] }) => {
   const { user } = useSelector((state) => state.auth);
@@ -92,7 +92,6 @@ const AppRouter = () => {
               </DashboardPage>
             }
           />
-          <Route path="/appointments" element={<AppointmentsPage />} />
           <Route
             path="/rondez-vous"
             element={

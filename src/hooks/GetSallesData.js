@@ -4,20 +4,6 @@ import { useSelector } from "react-redux";
 
 export default function GetSallesData(refresh) {
   const API_URL = process.env.REACT_APP_API_URL;
-  //const bearerToken = useSelector((state) => state.login.token);
-
-  /* const api = axios.create({
-    baseURL: process.env.REACT_APP_API_URL,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-      "Access-Control-Allow-Headers":
-        "append,delete,entries,foreach,get,has,keys,set,values,Authorization",
-      Authorization: `Bearer ${bearerToken}`,
-    },
-  }); */
-
   const [sallesData, setSallesData] = useState({});
   const [properties, setProperties] = useState({
     loading: true,
@@ -25,16 +11,26 @@ export default function GetSallesData(refresh) {
   });
 
   const getDataFacilities = () => {
-    axios.get(`${API_URL}/api/salles`).then((res) => {
-      setSallesData(res.data);
-      setProperties({
-        loading: false,
-        error: false,
+    axios.get(`${API_URL}/api/salles`, { withCredentials: true })
+      .then((res) => {
+        setSallesData(res.data);
+        setProperties({
+          loading: false,
+          error: false,
+        });
+      })
+      .catch((error) => {
+        setProperties({
+          loading: false,
+          error: true,
+        });
+        console.error("Error fetching salles data:", error);
       });
-    });
   };
 
-  useEffect(() => getDataFacilities(), [refresh]);
+  useEffect(() => {
+    getDataFacilities();
+  }, [refresh]);
 
   return { sallesData, getDataFacilities, properties };
 }

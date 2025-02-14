@@ -1,9 +1,10 @@
 export default async function getPrestations() {
   try {
-    const response = await fetch("http://localhost:8080/api/prestations");
+    const response = await fetch("http://localhost:8080/api/prestations", {
+      credentials: 'include'
+    });
 
     if (!response.ok) {
-      // Handle error if the response isn't OK
       throw new Error("Network response was not ok");
     }
 
