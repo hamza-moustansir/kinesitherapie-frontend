@@ -1,12 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
-import store from './app/store';
-import AppRouter from './routes/AppRouter';
-import './index.css';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import store from "./app/store";
+import AppRouter from "./routes/AppRouter";
+import "./index.css";
+import { Toaster } from "react-hot-toast";
 
 // Vérifier que l'élément existe avant de créer la racine
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
@@ -14,6 +15,7 @@ if (rootElement) {
     <React.StrictMode>
       <Provider store={store}>
         <AppRouter />
+        <Toaster />
       </Provider>
     </React.StrictMode>
   );

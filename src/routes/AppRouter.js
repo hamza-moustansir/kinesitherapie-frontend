@@ -16,6 +16,7 @@ import PaymentsPage from "../pages/PaymentsPage";
 
 import Navbar from "../components/shared/Navbar";
 import Sidebar from "../components/shared/Sidebar";
+import RondezVous from "../components/rondezvous/RondezVous";
 
 const ProtectedLayout = ({ roles = [] }) => {
   const { user } = useSelector((state) => state.auth);
@@ -55,6 +56,7 @@ const AppRouter = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/patients" element={<PatientsPage />} />
         <Route path="/appointments" element={<AppointmentsPage />} />
+        <Route path="/rondezvous" element={<RondezVous />} />
 
         {/* Admin-only routes */}
         <Route element={<ProtectedLayout roles={["Administrateur"]} />}>
