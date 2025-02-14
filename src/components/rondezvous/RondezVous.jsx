@@ -146,22 +146,22 @@ const RondezVous = () => {
   const [loading, setLoading] = useState(false);
 
   const checkPatientExists = async (id) => {
-    if (!id) return false;
+    if (!id) return null; // Return null instead of false
 
     try {
       const response = await fetch(`http://localhost:8080/api/patients/${id}`);
       const data = await response.json();
 
-      // Check if the response contains an error_message
+      // If the API returns an error message, the patient does not exist
       if (data.error_message) {
         console.log(`Error: ${data.error_message}`);
-        return false; // Patient does not exist
+        return null;
       }
 
-      return true; // Patient exists
+      return data; // Return the full patient object
     } catch (error) {
       console.error("Error checking patient existence:", error);
-      return false; // Assume patient doesn't exist if an error occurs
+      return null; // Return null in case of an error
     }
   };
 
@@ -211,7 +211,13 @@ const RondezVous = () => {
     console.log("SAAAAAAAAALES");
     console.log(salles);
 
-    getPrestations().then((data) => setPrestations(data));
+    getPrestations().then((data) => {
+      const updatedPrestations = data.map((prestation) => ({
+        ...prestation,
+        selected: false, // Ensure the selected property exists
+      }));
+      setAddonOptions(updatedPrestations);
+    });
     console.log("Prestatins");
     console.log(prestations);
 
@@ -235,20 +241,19 @@ const RondezVous = () => {
         }
 
         try {
-          const patientExists = await checkPatientExists(yourInfo.patientID);
+          const patientData = await checkPatientExists(yourInfo.patientID);
 
-          if (!patientExists) {
+          if (!patientData) {
             setPatientExists(false);
             toast.error("Patient introuvable, vérifier ID");
-            // If patient doesn't exist, display error
             return;
           }
 
           setPatientExists(true);
-          setPatient(patientExists);
+          setPatient(patientData); // Now you correctly store the patient object
           toast.success("User Found");
           console.log("Found User ----------------------------------------");
-          console.log(patientExists);
+          console.log(patientData);
 
           setIsEmpty(false);
         } catch (error) {

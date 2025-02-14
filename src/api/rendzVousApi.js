@@ -3,7 +3,7 @@ import axios from "axios";
 export const createRendezVous = async (appointmentData) => {
   try {
     const response = await axios.post(
-      "http://localhost:8080/api/rendezvous",
+      "http://localhost:8080/api/rendez-vous",
       appointmentData
     );
     return response.data; // The response from the server
