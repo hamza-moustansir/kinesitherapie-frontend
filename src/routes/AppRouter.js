@@ -8,6 +8,7 @@ import PatientsPage from '../pages/PatientsPage';
 import UserPage from '../pages/UserPage';
 import CalendrierPage from '../pages/CalendrierPage';
 import PaymentsPage from '../pages/PaymentsPage';
+import Pass from '../components/auth/Pass';
 import ForbiddenPage from '../pages/ForbiddenPage';
 import Navbar from '../components/shared/Navbar';
 import Sidebar from '../components/shared/Sidebar';
@@ -50,6 +51,7 @@ const AppRouter = () => {
         {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/oblierMotDePass" element={<Pass />} />
         <Route path="/forbidden" element={<ForbiddenPage />} />
 
         {/* Routes protégées */}

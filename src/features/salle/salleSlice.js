@@ -20,16 +20,14 @@ export const fetchSalles = createAsyncThunk('salles/fetchSalles', async ({ page,
   return response;
 });
 
-export const createSalle = createAsyncThunk(
-  'salles/create',
-  async (salleData, thunkAPI) => {
-    try {
-      return await SalleService.createSalle(salleData);
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error.response.data);
-    }
-  }
-);
+export const createSalle = createAsyncThunk('salles/createSalle', async (salleData) => {
+  const response = await SalleService.createSalle(salleData);
+  console.log("Salle créée et stockée dans Redux :", response.data); // 🔍 Vérifie si Redux reçoit les bons champs
+  return response.data; // 🔥 Vérifie que `response.data` contient `nombreLits`
+});
+
+
+
 
 export const updateSalle = createAsyncThunk(
   'salles/update',
@@ -76,9 +74,13 @@ const salleSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
       })
-      .addCase(deleteSalle.fulfilled, (state, action) => {
-        state.salles = state.salles.filter(salle => salle.id !== action.payload);
-      });
+          .addCase(createSalle.fulfilled, (state, action) => {
+            state.salles.push(action.payload); // 🔥 Ajoute la salle directement à Redux
+          })
+          .addCase(deleteSalle.fulfilled, (state, action) => {
+            state.salles = state.salles.filter(salle => salle.id !== action.payload);
+          });
+      
   },
 });
 

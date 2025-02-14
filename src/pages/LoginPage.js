@@ -19,12 +19,13 @@ const LoginPage = () => {
         <div className="bg-white p-8 rounded-lg shadow-md">
           <LoginForm />
           <p className="mt-4 text-center text-sm text-gray-600">
-            Pas de compte ?{' '}
+           {' '}
             <a 
-              href="/register" 
+              href="/oblierMotDePass" 
+             
               className="font-medium text-blue-600 hover:text-blue-500"
             >
-              Créer un compte
+              Mot de passe oublié ?
             </a>
           </p>
         </div>
