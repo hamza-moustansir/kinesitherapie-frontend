@@ -19,7 +19,7 @@ import SelectSalle from "./SalleSelect";
 import { createRendezVous } from "../../api/rendzVousApi";
 import SelectSchedule from "./SelectSchedule";
 import GetSallesData from "../../hooks/GetSallesData";
-import { getPrestations } from "../../api/prestationApi";
+import getPrestations from "../../api/prestationApi";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import RendezVousPDF from "./RendezVousPDF";
 import { Link } from "react-router-dom";
@@ -207,25 +207,39 @@ const RondezVous = () => {
 
   useEffect(() => {
     // Fetch salles when component mounts
-    getSalles().then((data) => setSalles(data));
-    console.log("SAAAAAAAAALES");
-    console.log(salles);
-
-    getPrestations().then((data) => {
-      const updatedPrestations = data.map((prestation) => ({
-        ...prestation,
-        selected: false, // Ensure the selected property exists
-      }));
-      setAddonOptions(updatedPrestations);
+    getSalles().then((data) => {
+      setSalles(data);
+      console.log("SAAAAAAAAALES");
+      console.log(data);
     });
-    console.log("Prestatins");
-    console.log(prestations);
+
+    getPrestations()
+      .then((data) => {
+        if (data) {
+          // Check if data is not undefined
+          setPrestations(data);
+          console.log("Prestations Fetched:", data);
+
+          // Only update addonOptions if data is valid
+          const updatedPrestations = data.map((prestation) => ({
+            ...prestation,
+            selected: false,
+          }));
+          setAddonOptions(updatedPrestations);
+          console.log("Updated Prestation Options:", updatedPrestations);
+        } else {
+          console.error("No prestations data returned.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching prestations:", error);
+      });
 
     const now = new Date();
     now.setHours(10, 0, 0, 0); // Set the time to 10:00 AM
     setAppointmentDate(now);
     setIsDateEmpty(false); // Set as not empty since we've already set a date
-  }, []);
+  }, []); // Empty dependency array means this effect runs only once
 
   //------------------------------FUNCTIONS------------------------------
 

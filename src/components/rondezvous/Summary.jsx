@@ -37,8 +37,8 @@ const Summary = ({
   return (
     <div>
       <SectionHeading
-        title="Finishing up"
-        desc="Double-check everything looks OK before confirming."
+        title="Paiement"
+        desc="Vérifiez que tout est en ordre avant de confirmer."
       />
       <div>
         <div className="bg-[#f0f6ff] rounded-xl p-5 mb-5">

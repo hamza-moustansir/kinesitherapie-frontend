@@ -3,11 +3,6 @@ import { useNavigate } from 'react-router-dom';
 
 const ForbiddenPage = () => {
   const navigate = useNavigate();
-import React from "react";
-
-export default function ForbiddenPage() {
-  return <div></div>;
-}
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
