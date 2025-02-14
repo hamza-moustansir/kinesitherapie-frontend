@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -21,25 +21,25 @@ const SalleForm = ({ salle, onSubmit, onCancel }) => {
       nombreLits: '',
     },
   });
-  useEffect(() => {
-    console.log("Salles mises à jour après création :", salle);
-  }, [salle]);
-  
 
   return (
     <form
-  onSubmit={handleSubmit((data) => {
-    const formattedData = {
-      id: data.id,
-      name: data.nom,  // 🔥 L'API attend "name"
-      location: data.location,
-      status: data.status,
-      nombreLits: parseInt(data.nombreLits, 10) // 🔥 L'API attend "nombreLits"
-    };
-    onSubmit(formattedData);
-  })}
->
+      onSubmit={handleSubmit((data) => {
+        const formattedData = {
+          nom: data.nom,  // 🔥 L'API attend "name"
+          location: data.location,
+          status: data.status,
+          nombreLits: parseInt(data.nombreLits, 10), // 🔥 L'API attend "nombreLits"
+        };
 
+        // Ajouter un id uniquement si salle existe (mise à jour)
+        if (salle?.id) {
+          formattedData.id = salle.id;
+        }
+
+        onSubmit(formattedData);
+      })}
+    >
 
       {/* Champ Nom */}
       <div>
@@ -88,7 +88,7 @@ const SalleForm = ({ salle, onSubmit, onCancel }) => {
         {errors.nombreLits && <p className="text-red-500 text-sm">{errors.nombreLits.message}</p>}
       </div>
 
-      {/* Boutons d'action */}
+      {/* Boutons */}
       <div className="flex justify-end space-x-4">
         <button
           type="button"

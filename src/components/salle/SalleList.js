@@ -8,7 +8,7 @@ import ConfirmationDialog from '../../components/shared/ConfirmationDialog';
 const SalleList = () => {
   const dispatch = useDispatch();
   const { salles = [], status, error, pagination = { page: 0, size: 10, totalPages: 1 } } = useSelector((state) => state.salles || {});
-
+  
   const [showForm, setShowForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedSalle, setSelectedSalle] = useState(null);
@@ -20,11 +20,6 @@ const SalleList = () => {
   useEffect(() => {
     dispatch(fetchSalles({ page: pagination.page, size: pagination.size }));
   }, [dispatch, pagination.page]);
-  
-  useEffect(() => {
-    console.log("Salles mises à jour :", salles); // 🔍 Vérifie si Redux met bien à jour la liste
-  }, [salles]);
-  
 
   const handleDelete = async () => {
     if (selectedSalle) {
@@ -65,27 +60,35 @@ const SalleList = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-  {salles.map((salle) => (
-    <tr key={salle.id}>
-      <td className="px-6 py-4 whitespace-nowrap">{salle.nom}</td> {/* Correction de name -> nom */}
-      <td className="px-6 py-4 whitespace-nowrap">{salle.location}</td>
-      <td className="px-6 py-4 whitespace-nowrap">{salle.status}</td>
-      <td className="px-6 py-4 whitespace-nowrap">{salle.nombreLits}</td> {/* Correction de queue -> nombreLits */}
-      <td className="px-6 py-4 whitespace-nowrap space-x-2">
-        <button
-          onClick={() => {
-            setSelectedSalle(salle);
-            setShowDeleteDialog(true);
-          }}
-          className="text-red-600 hover:text-red-900"
-        >
-          Supprimer
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+            {salles.map((salle) => (
+              <tr key={salle.id}>
+                <td className="px-6 py-4 whitespace-nowrap">{salle.nom}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{salle.location}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{salle.status}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{salle.nombreLits}</td>
+                <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                  <button
+                    onClick={() => {
+                      setSelectedSalle(salle);
+                      setShowForm(true);
+                    }}
+                    className="text-blue-600 hover:text-blue-900"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedSalle(salle);
+                      setShowDeleteDialog(true);
+                    }}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
 
@@ -112,12 +115,17 @@ const SalleList = () => {
         <SalleForm
           salle={selectedSalle}
           onSubmit={(data) => {
-            dispatch(createSalle(data)).then(() => {
-              dispatch(fetchSalles()); // 🔄 Recharge les salles pour éviter des erreurs d'affichage
-            });
+            if (selectedSalle) {
+              dispatch(updateSalle(data)).then(() => {
+                dispatch(fetchSalles());
+              });
+            } else {
+              dispatch(createSalle(data)).then(() => {
+                dispatch(fetchSalles());
+              });
+            }
             setShowForm(false);
           }}
-          
           onCancel={() => setShowForm(false)}
         />
       </Modal>

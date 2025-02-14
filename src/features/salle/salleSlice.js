@@ -20,11 +20,15 @@ export const fetchSalles = createAsyncThunk('salles/fetchSalles', async ({ page,
   return response;
 });
 
-export const createSalle = createAsyncThunk('salles/createSalle', async (salleData) => {
-  const response = await SalleService.createSalle(salleData);
-  console.log("Salle créée et stockée dans Redux :", response.data); // 🔍 Vérifie si Redux reçoit les bons champs
-  return response.data; // 🔥 Vérifie que `response.data` contient `nombreLits`
+export const createSalle = createAsyncThunk('salles/createSalle', async (salleData, { rejectWithValue }) => {
+  try {
+    const response = await SalleService.createSalle(salleData);
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
+  }
 });
+
 
 
 
