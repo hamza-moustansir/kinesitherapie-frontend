@@ -8,7 +8,7 @@ import ConfirmationDialog from '../../components/shared/ConfirmationDialog';
 const SalleList = () => {
   const dispatch = useDispatch();
   const { salles = [], status, error, pagination = { page: 0, size: 10, totalPages: 1 } } = useSelector((state) => state.salles || {});
-
+  
   const [showForm, setShowForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedSalle, setSelectedSalle] = useState(null);
@@ -19,7 +19,7 @@ const SalleList = () => {
 
   useEffect(() => {
     dispatch(fetchSalles({ page: pagination.page, size: pagination.size }));
-  }, [dispatch]);
+  }, [dispatch, pagination.page]);
 
   const handleDelete = async () => {
     if (selectedSalle) {
@@ -70,6 +70,15 @@ const SalleList = () => {
                   <button
                     onClick={() => {
                       setSelectedSalle(salle);
+                      setShowForm(true);
+                    }}
+                    className="text-blue-600 hover:text-blue-900"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedSalle(salle);
                       setShowDeleteDialog(true);
                     }}
                     className="text-red-600 hover:text-red-900"
@@ -107,9 +116,13 @@ const SalleList = () => {
           salle={selectedSalle}
           onSubmit={(data) => {
             if (selectedSalle) {
-              dispatch(updateSalle({ id: selectedSalle.id, salleData: data }));
+              dispatch(updateSalle(data)).then(() => {
+                dispatch(fetchSalles());
+              });
             } else {
-              dispatch(createSalle(data));
+              dispatch(createSalle(data)).then(() => {
+                dispatch(fetchSalles());
+              });
             }
             setShowForm(false);
           }}

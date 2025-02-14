@@ -3,37 +3,55 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
+// Définition du schéma de validation avec les bons champs
 const schema = yup.object().shape({
-  name: yup.string().required('Le nom est requis'),
-  location: yup.string().required('L\'emplacement est requis'),
-  status: yup.string().required('Le statut est requis'),
-  capacity: yup.number().required('La capacité est requise').min(1, 'La capacité doit être positive'),
-  queue: yup.number().required('Le nombre de lits est requis').min(1, 'Le nombre de lits doit être positif'),
+  nom: yup.string().required('Le nom est requis'),
+  location: yup.string().required("L'emplacement est requis"),
+  status: yup.string().oneOf(["AVAILABLE", "IN_USE", "MAINTENANCE", "OCCUPIED"], "Statut invalide").required('Le statut est requis'),
+  nombreLits: yup.number().typeError('Le nombre de lits doit être un nombre').required('Le nombre de lits est requis').min(1, 'Le nombre de lits doit être positif'),
 });
 
 const SalleForm = ({ salle, onSubmit, onCancel }) => {
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: salle || {
-      name: '',
+      nom: '',
       location: '',
       status: '',
-      capacity: '',
-      queue: '',
+      nombreLits: '',
     },
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      onSubmit={handleSubmit((data) => {
+        const formattedData = {
+          nom: data.nom,  // 🔥 L'API attend "name"
+          location: data.location,
+          status: data.status,
+          nombreLits: parseInt(data.nombreLits, 10), // 🔥 L'API attend "nombreLits"
+        };
+
+        // Ajouter un id uniquement si salle existe (mise à jour)
+        if (salle?.id) {
+          formattedData.id = salle.id;
+        }
+
+        onSubmit(formattedData);
+      })}
+    >
+
+      {/* Champ Nom */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Nom</label>
         <input
-          {...register('name')}
-          className={`mt-1 block w-full rounded-md border ${errors.name ? 'border-red-500' : 'border-gray-300'} shadow-sm`}
+          {...register('nom')}
+          className={`mt-1 block w-full rounded-md border ${errors.nom ? 'border-red-500' : 'border-gray-300'} shadow-sm`}
         />
-        {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+        {errors.nom && <p className="text-red-500 text-sm">{errors.nom.message}</p>}
       </div>
 
+      {/* Champ Emplacement */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Emplacement</label>
         <input
@@ -43,6 +61,7 @@ const SalleForm = ({ salle, onSubmit, onCancel }) => {
         {errors.location && <p className="text-red-500 text-sm">{errors.location.message}</p>}
       </div>
 
+      {/* Champ Statut */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Statut</label>
         <select
@@ -50,32 +69,26 @@ const SalleForm = ({ salle, onSubmit, onCancel }) => {
           className={`mt-1 block w-full rounded-md border ${errors.status ? 'border-red-500' : 'border-gray-300'} shadow-sm`}
         >
           <option value="">Sélectionner le statut</option>
-          <option value="OCCUPE">Occupée</option>
-          <option value="LIBRE">Libre</option>
+          <option value="AVAILABLE">Disponible</option>
+          <option value="IN_USE">En cours d'utilisation</option>
+          <option value="MAINTENANCE">En maintenance</option>
+          <option value="OCCUPIED">Occupée</option>
         </select>
         {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Capacité</label>
-        <input
-          {...register('capacity')}
-          type="number"
-          className={`mt-1 block w-full rounded-md border ${errors.capacity ? 'border-red-500' : 'border-gray-300'} shadow-sm`}
-        />
-        {errors.capacity && <p className="text-red-500 text-sm">{errors.capacity.message}</p>}
-      </div>
-
+      {/* Champ Nombre de lits */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Nombre de lits</label>
         <input
-          {...register('queue')}
+          {...register('nombreLits')}
           type="number"
-          className={`mt-1 block w-full rounded-md border ${errors.queue ? 'border-red-500' : 'border-gray-300'} shadow-sm`}
+          className={`mt-1 block w-full rounded-md border ${errors.nombreLits ? 'border-red-500' : 'border-gray-300'} shadow-sm`}
         />
-        {errors.queue && <p className="text-red-500 text-sm">{errors.queue.message}</p>}
+        {errors.nombreLits && <p className="text-red-500 text-sm">{errors.nombreLits.message}</p>}
       </div>
 
+      {/* Boutons */}
       <div className="flex justify-end space-x-4">
         <button
           type="button"

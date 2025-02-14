@@ -1,25 +1,19 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-import { useSelector } from "react-redux";
-import { useState } from "react";
-import LoginPage from "../pages/LoginPage";
-import RegisterPage from "../pages/RegisterPage";
-import Dashboard from "../pages/Dashboard";
-import PatientsPage from "../pages/PatientsPage";
-import UserPage from "../pages/UserPage";
-import CalendrierPage from "../pages/CalendrierPage";
-import SallePage from "../pages/SallePage";
-import ForbiddenPage from "../pages/ForbiddenPage";
-import AppointmentsPage from "../pages/AppointmentsPage";
-import RondezVous from "../components/rondezvous/RondezVous";
-import Navbar from "../components/shared/Navbar";
-import Sidebar from "../components/shared/Sidebar";
-import DashboardPage from "../pages/DashboardPage";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
+import LoginPage from '../pages/LoginPage';
+import RegisterPage from '../pages/RegisterPage';
+import Dashboard from '../pages/Dashboard';
+import PatientsPage from '../pages/PatientsPage';
+import UserPage from '../pages/UserPage';
+import CalendrierPage from '../pages/CalendrierPage';
+import PaymentsPage from '../pages/PaymentsPage';
+import Pass from '../components/auth/Pass';
+import ForbiddenPage from '../pages/ForbiddenPage';
+import Navbar from '../components/shared/Navbar';
+import Sidebar from '../components/shared/Sidebar';
+import DashboardPage from '../pages/DashboardPage'; // Importer DashboardPage
+import SallePage from '../pages/SallePage';
 
 const ProtectedLayout = ({ roles = [] }) => {
   const { user } = useSelector((state) => state.auth);
@@ -61,6 +55,7 @@ const AppRouter = () => {
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/oblierMotDePass" element={<Pass />} />
         <Route path="/forbidden" element={<ForbiddenPage />} />
 
         {/* Protected Routes */}
