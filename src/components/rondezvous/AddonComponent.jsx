@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const AddonComponent = ({
-  id,
-  title,
-  desc,
-  price,
-  selected,
-  onBoxCheck,
-  planDuration,
-}) => {
+const AddonComponent = ({ id, nom, tarif, selected, onBoxCheck }) => {
   const [addonBg, setAddonBg] = useState("");
   const [check, setCheck] = useState(false);
   useEffect(() => {
@@ -46,20 +38,17 @@ const AddonComponent = ({
           <input
             onChange={onBoxCheck}
             data-id={id}
-            data-title-name={title}
-            data-price={price}
+            data-title-name={nom}
+            data-price={tarif}
             className="w-4 h-4"
             type="checkbox"
             checked={check}
           />
           <div className="">
-            <div className="font-bold text-[#02295a]">{title}</div>
-            <div className="text-[#9699ab] text-[14px]">{desc}</div>
+            <div className="font-bold text-[#02295a]">{nom}</div>
           </div>
         </div>
-        <div className="text-[#adbeff] text-[14px] font-bold">
-          +${price}/{planDuration}
-        </div>
+        <div className="text-[#adbeff] text-[14px] font-bold">+{tarif}DH</div>
       </div>
     </div>
   );

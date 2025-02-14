@@ -19,6 +19,10 @@ import SelectSalle from "./SalleSelect";
 import { createRendezVous } from "../../api/rendzVousApi";
 import SelectSchedule from "./SelectSchedule";
 import GetSallesData from "../../hooks/GetSallesData";
+import { getPrestations } from "../../api/prestationApi";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import RendezVousPDF from "./RendezVousPDF";
+import { Link } from "react-router-dom";
 
 const RondezVous = () => {
   //------------------------------STATES------------------------------
@@ -26,10 +30,10 @@ const RondezVous = () => {
   const [stepNumber, setStepNumber] = useState(() => 1);
   const [goBackVisible, setGoBackVisible] = useState("invisible");
   const [steps, setSteps] = useState([
-    { id: 1, title: "YOUR INFO", active: true },
-    { id: 2, title: "SELECT PLAN", active: false },
-    { id: 3, title: "ADD-ONS", active: false },
-    { id: 4, title: "SUMMARY", active: false },
+    { id: 1, title: "Les infos de patient", active: true },
+    { id: 2, title: "Rondez-Vous", active: false },
+    { id: 3, title: "Prestations", active: false },
+    { id: 4, title: "Sommaire", active: false },
   ]);
 
   const [yourInfo, setYourInfo] = useState({
@@ -50,9 +54,13 @@ const RondezVous = () => {
   const [planDurationName, setPlanDurationName] = useState("Monthly");
   const [selectedSalle, setSelectedSalle] = useState(null);
   const [appointmentDate, setAppointmentDate] = useState(null);
+  const [isSalleEmpty, setIsSalleEmpty] = useState(false);
+  const [isDateEmpty, setIsDateEmpty] = useState(false);
   const [salles, setSalles] = useState([]);
+  const [prestations, setPrestations] = useState([]);
   const [status, setStatus] = useState("AVAILABLE");
-  const [isSalleEmpty, setIsSalleEmpty] = useState(true);
+  const [pdfData, setPdfData] = useState(null);
+  const [showDownloadLink, setShowDownloadLink] = useState(false);
 
   const [plan, setPlan] = useState({
     title: "",
@@ -93,29 +101,38 @@ const RondezVous = () => {
   const [addonOptions, setAddonOptions] = useState([
     {
       id: 1,
-      title: "Online service",
-      desc: "Access to multiplayer games",
-      price: 1,
-      monthlyPrice: 1,
-      yearlyPrice: 10,
+      nom: "REHABILITATION",
+      type: "REHABILITATION",
+      tarif: 200,
       selected: false,
     },
     {
       id: 2,
-      title: "Larger storage",
-      desc: "Extra 1TB of cloud save",
-      price: 2,
-      monthlyPrice: 2,
-      yearlyPrice: 20,
+      nom: "SPORTS THERAPY",
+      type: "SPORTS_THERAPY",
+      tarif: 150,
       selected: false,
     },
     {
       id: 3,
-      title: "Customizable profile",
-      desc: "Custom theme on your profile",
-      price: 2,
-      monthlyPrice: 2,
-      yearlyPrice: 20,
+      nom: "ORTHOPEDICS",
+      type: "ORTHOPEDICS",
+      tarif: 100,
+      selected: false,
+    },
+
+    {
+      id: 4,
+      nom: "MANUAL THERAPY",
+      type: "MANUAL_THERAPY",
+      tarif: 100,
+      selected: false,
+    },
+    {
+      id: 5,
+      nom: "WELLNESS",
+      type: "WELLNESS",
+      tarif: 150,
       selected: false,
     },
   ]);
@@ -127,16 +144,24 @@ const RondezVous = () => {
   // ---------------------------- CHECK USER ID ---------------------------
   const [patientExists, setPatientExists] = useState(null); // To store validation result
   const [loading, setLoading] = useState(false);
+
   const checkPatientExists = async (id) => {
     if (!id) return false;
 
     try {
       const response = await fetch(`http://localhost:8080/api/patients/${id}`);
-      const exists = await response.json();
-      return exists; // Return true or false
+      const data = await response.json();
+
+      // Check if the response contains an error_message
+      if (data.error_message) {
+        console.log(`Error: ${data.error_message}`);
+        return false; // Patient does not exist
+      }
+
+      return true; // Patient exists
     } catch (error) {
-      console.error("Erreur lors de la vérification du patient:", error);
-      return false;
+      console.error("Error checking patient existence:", error);
+      return false; // Assume patient doesn't exist if an error occurs
     }
   };
 
@@ -185,9 +210,19 @@ const RondezVous = () => {
     getSalles().then((data) => setSalles(data));
     console.log("SAAAAAAAAALES");
     console.log(salles);
+
+    getPrestations().then((data) => setPrestations(data));
+    console.log("Prestatins");
+    console.log(prestations);
+
+    const now = new Date();
+    now.setHours(10, 0, 0, 0); // Set the time to 10:00 AM
+    setAppointmentDate(now);
+    setIsDateEmpty(false); // Set as not empty since we've already set a date
   }, []);
 
   //------------------------------FUNCTIONS------------------------------
+
   const nextStep = async () => {
     if (stepNumber === 1) {
       // If using patient ID
@@ -204,7 +239,8 @@ const RondezVous = () => {
 
           if (!patientExists) {
             setPatientExists(false);
-            setIsEmpty(true); // If patient doesn't exist, display error
+            toast.error("Patient introuvable, vérifier ID");
+            // If patient doesn't exist, display error
             return;
           }
 
@@ -243,7 +279,7 @@ const RondezVous = () => {
             telephone: yourInfo.telephone,
           });
 
-          setPatient(createResponse);
+          setPatient(createResponse.data);
           console.log("Created User ----------------------------------------");
           console.log(createResponse);
 
@@ -259,15 +295,66 @@ const RondezVous = () => {
     }
 
     if (stepNumber == 2) {
-      if (plan.title.length == 0) {
-        setIsPlanEmpty(true);
+      if (!selectedSalle) {
+        setIsSalleEmpty(true);
+        console.log("setIsSalleEmpty(True)");
+
         return;
       } else {
-        setIsPlanEmpty(false);
+        setIsSalleEmpty(false);
       }
+
+      if (!appointmentDate) {
+        console.log("appointmentDate = {}");
+        setIsDateEmpty(true);
+        return;
+      } else {
+        setIsDateEmpty(false);
+      }
+
+      console.log("Salle sélectionnée:", selectedSalle);
+      console.log("Date de l'appointement:", appointmentDate);
+      //return;
+    }
+
+    if (stepNumber == 3) {
+      console.log(addonOptions);
+    }
+    if (stepNumber == 4) {
+      const requesteRendzVous = {
+        patientId: patient?.id,
+        salleId: selectedSalle?.id,
+        dateHeure: appointmentDate,
+        presetationIds: addonOptions,
+      };
+      console.log(requesteRendzVous);
+      return;
+
+      console.log(addonOptions);
     }
 
     setStepNumber((prevStep) => prevStep + 1);
+  };
+
+  const confirmHandler = () => {
+    const requesteRendzVous = {
+      patientId: patient?.id,
+      salleId: selectedSalle?.id,
+      dateHeure: appointmentDate,
+      presetationIds: addonOptions.map((option) => option.id),
+    };
+    console.log(requesteRendzVous);
+    setDisplayThankyou(true);
+
+    setPdfData({
+      patient: patient,
+      salle: selectedSalle,
+      dateHeure: appointmentDate,
+      prestations: addonOptions.filter((option) => option.selected === true),
+    });
+    setShowDownloadLink(true);
+
+    setDisplayThankyou(true);
   };
 
   const selectSalle = (salle) => {
@@ -277,6 +364,7 @@ const RondezVous = () => {
 
   const changeAppointmentDate = (date) => {
     setAppointmentDate(date);
+    setIsDateEmpty(false);
   };
 
   const createRdv = async () => {
@@ -330,64 +418,15 @@ const RondezVous = () => {
       return { ...prevPlan, title: title, price: price };
     });
   };
-  const toggleDuration = () => {
-    if (plan.yearly == false) {
-      setPlan((prevPlan) => {
-        setPlanDuration("yr");
-        setPlanDurationName("Yearly");
-
-        setPlanOptions((prevPlanOptions) => {
-          const updatedPlanOptions = prevPlanOptions.map((planOption) => {
-            return { ...planOption, price: planOption.yearlyPrice };
-          });
-          return updatedPlanOptions;
-        });
-
-        setAddonOptions((prevAddonOptions) => {
-          const updatedAddonOptions = prevAddonOptions.map((addonOption) => {
-            return { ...addonOption, price: addonOption.yearlyPrice };
-          });
-          return updatedAddonOptions;
-        });
-
-        return { ...prevPlan, yearly: true };
-      });
-    } else {
-      setPlan((prevPlan) => {
-        setPlanDuration("mo");
-        setPlanDurationName("Monthly");
-
-        setPlanOptions((prevPlanOptions) => {
-          const updatedPlanOptions = prevPlanOptions.map((planOption) => {
-            return { ...planOption, price: planOption.monthlyPrice };
-          });
-          return updatedPlanOptions;
-        });
-
-        setAddonOptions((prevAddonOptions) => {
-          const updatedAddonOptions = prevAddonOptions.map((addonOption) => {
-            return { ...addonOption, price: addonOption.monthlyPrice };
-          });
-          return updatedAddonOptions;
-        });
-
-        return { ...prevPlan, yearly: false };
-      });
-    }
-
-    // setPlan((prevPlan) => {
-    //   return { ...prevPlan, yearly: !plan.yearly };
-    // });
-  };
 
   const checkBox = (e) => {
     const id = parseInt(e.target.getAttribute("data-id"));
-    const title = e.target.getAttribute("data-title-name");
-    const price = parseInt(e.target.getAttribute("data-price"));
+    const nom = e.target.getAttribute("data-title-name");
+    const tarif = parseInt(e.target.getAttribute("data-price"));
     if (e.target.checked == true) {
       setAddons((prevAddons) => [
         ...prevAddons,
-        { id: id, title: title, price: price },
+        { id: id, nom: nom, tarif: tarif },
       ]);
     } else {
       setAddons((prevAddons) => {
@@ -410,33 +449,6 @@ const RondezVous = () => {
       return updatedAddons;
     });
   };
-
-  // const selectAddon = (id) => {
-  //   setAddonOptions((prevAddons) => {
-  //     const updatedAddons = prevAddons.map((addon) => {
-  //       if (addon.id == id) {
-  //         if (addon.selected == false) {
-  //           return { ...addon, selected: true };
-  //         } else {
-  //           return { ...addon, selected: false };
-  //         }
-  //       } else {
-  //         return addon;
-  //       }
-  //     });
-  //     return updatedAddons;
-  //   });
-  // };
-
-  /* <Plan
-    currentPatient={patient}
-    onPlanSelect={selectPlan}
-    onToggleDuration={toggleDuration}
-    currentStep={stepNumber}
-    planOptions={planOptions}
-    isPlanEmpty={isPlanEmpty}
-    planDuration={planDuration}
-  /> */
 
   return (
     <div className="container">
@@ -469,6 +481,26 @@ const RondezVous = () => {
             //<div className="flex flex-col justify-between absolute top-40 w-[450px] md:static mb-40 rounded-2xl mx-8 px-16 pt-10 pb-16 bg-white md:px-0 md:py-5 md:mx-28 md:w-100 md:my-2">
             <>
               <Thankyou />
+
+              {showDownloadLink && pdfData && (
+                <>
+                  <PDFDownloadLink
+                    document={<RendezVousPDF data={pdfData} />}
+                    fileName="RendezVous.pdf"
+                    className="font-medium bg-green-600 select-none text-white py-3 px-5 rounded-lg cursor-pointer transition duration-100 hover:bg-green-700 mt-4 ml-3"
+                  >
+                    {({ loading }) =>
+                      loading ? "Génération en cours..." : "Télécharger PDF"
+                    }
+                  </PDFDownloadLink>
+                  <Link
+                    to="/patients"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Allez à la gestion des patients
+                  </Link>
+                </>
+              )}
             </>
             //</div>
           )) || (
@@ -486,11 +518,6 @@ const RondezVous = () => {
                     {loading && (
                       <p className="text-gray-500">Vérification en cours...</p>
                     )}
-                    {patientExists === false && (
-                      <p className="text-red-500">
-                        Patient non trouvé. Veuillez entrer les informations.
-                      </p>
-                    )}
                   </div>
                 )) ||
                   (stepNumber === 2 && (
@@ -500,13 +527,21 @@ const RondezVous = () => {
                         onSalleSelect={selectSalle}
                         isSalleEmpty={isSalleEmpty}
                       />
-                      <SelectSchedule onDateSelect={setAppointmentDate} />
-                      <button
-                        onClick={createRdv}
-                        disabled={isSalleEmpty || !appointmentDate}
-                      >
-                        Create Rendez-vous
-                      </button>
+                      <SelectSchedule
+                        onDateSelect={changeAppointmentDate}
+                        isDateEmpty={isDateEmpty}
+                        setIsDateEmpty={setIsDateEmpty}
+                      />
+                      {isSalleEmpty && (
+                        <div className="text-red-500">
+                          Salle non sélectionnée !
+                        </div>
+                      )}
+                      {isDateEmpty && (
+                        <div className="text-red-500">
+                          Date non sélectionnée !
+                        </div>
+                      )}
                     </div>
                   )) ||
                   (stepNumber === 3 && (
@@ -520,6 +555,9 @@ const RondezVous = () => {
                   (stepNumber === 4 && (
                     <Summary
                       selectedPlan={plan}
+                      selectedSalle={selectedSalle}
+                      selectedDate={appointmentDate}
+                      selectedPatient={patient}
                       selectedAddons={addons}
                       currentStep={stepNumber}
                       planDuration={planDuration}
@@ -545,12 +583,14 @@ const RondezVous = () => {
                 </div>
 
                 {stepNumber === 4 ? (
-                  <div
-                    onClick={() => setDisplayThankyou(true)}
-                    className="font-medium bg-[#473dff] select-none text-white py-3 px-5 rounded-lg cursor-pointer transition duration-100 hover:opacity-90"
-                  >
-                    Confirm
-                  </div>
+                  <>
+                    <button
+                      onClick={confirmHandler}
+                      className="font-medium bg-[#473dff] select-none text-white py-3 px-5 rounded-lg cursor-pointer transition duration-100 hover:opacity-90"
+                    >
+                      Confirmer et Générer PDF
+                    </button>
+                  </>
                 ) : (
                   <div
                     onClick={nextStep}

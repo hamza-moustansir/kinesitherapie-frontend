@@ -7,11 +7,11 @@ const Thankyou = () => {
       <div>
         <img src={thankyouIcon} alt="Thank you" />
       </div>
-      <div className="font-bold text-[#02295a] text-3xl">Thank you!</div>
+      <div className="font-bold text-[#02295a] text-3xl">Merci!</div>
       <p className="text-[#9699ab] text-[14px] w-96">
-        Thanks for confirming your subscription! We hope you have fun using our
-        platform. If you ever need support. Please feel free to email us at
-        zainkazi27@gmail.com
+        Merci de confirmer votre abonnement! Nous espérons que vous apprécierez
+        notre plateforme. Si jamais vous avez besoin d’aide. N’hésitez pas à
+        nous écrire à yassin@gmail.com
       </p>
     </div>
   );

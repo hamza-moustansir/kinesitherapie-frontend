@@ -19,11 +19,10 @@ const Addons = ({ currentStep, onBoxCheck, planDuration, addonOptions }) => {
             onBoxCheck={onBoxCheck}
             key={addon.id}
             id={addon.id}
-            title={addon.title}
-            desc={addon.desc}
-            price={addon.price}
+            nom={addon.nom}
+            type={addon.type}
+            tarif={addon.tarif}
             selected={addon.selected}
-            planDuration={planDuration}
           />
         ))}
       </div>
