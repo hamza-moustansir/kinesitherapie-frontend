@@ -585,7 +585,7 @@ const RondezVous = () => {
                     />
                   ))}
               </div>
-              <div className="flex justify-between fixed px-16 bottom-0 left-0 w-full bg-white p-5 md:static md:p-0 md:static items-center w-[700px]]">
+              <div className="flex justify-between fixed px-16 bottom-0 left-0 w-full bg-white p-5 md:p-0 md:static items-center w-[700px]]">
                 {/* {stepNumber != 1 && (
               <div
                 onClick={prevStep}

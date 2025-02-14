@@ -13,15 +13,13 @@ import Dashboard from "../pages/Dashboard";
 import PatientsPage from "../pages/PatientsPage";
 import UserPage from "../pages/UserPage";
 import CalendrierPage from "../pages/CalendrierPage";
-import PaymentsPage from "../pages/PaymentsPage";
-import Navbar from "../components/shared/Navbar";
-import Sidebar from "../components/shared/Sidebar";
-import DashboardPage from "../pages/DashboardPage"; // Importer DashboardPage
 import SallePage from "../pages/SallePage";
 import ForbiddenPage from "../pages/ForbiddenPage";
 import AppointmentsPage from "../pages/AppointmentsPage";
-
 import RondezVous from "../components/rondezvous/RondezVous";
+import Navbar from "../components/shared/Navbar";
+import Sidebar from "../components/shared/Sidebar";
+import DashboardPage from "../pages/DashboardPage";
 
 const ProtectedLayout = ({ roles = [] }) => {
   const { user } = useSelector((state) => state.auth);
@@ -66,7 +64,7 @@ const AppRouter = () => {
         <Route path="/forbidden" element={<ForbiddenPage />} />
 
         {/* Protected Routes */}
-        <Route element={<ProtectedLayout />}>
+        <Route element={<ProtectedLayout roles={["ADMIN", "SECRETAIRE"]} />}>
           <Route
             path="/"
             element={
@@ -111,11 +109,6 @@ const AppRouter = () => {
         </Route>
 
         {/* Admin-only routes */}
-        <Route element={<ProtectedLayout roles={["Administrateur"]} />}>
-          <Route path="/payments" element={<PaymentsPage />} />
-        </Route>
-
-        {/* Admin User Management */}
         <Route element={<ProtectedLayout roles={["ADMIN"]} />}>
           <Route
             path="/users"
