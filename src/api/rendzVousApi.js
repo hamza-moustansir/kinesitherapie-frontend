@@ -7,7 +7,7 @@ export const createRendezVous = async (appointmentData) => {
       appointmentData,
       { withCredentials: true }
     );
-    return response.data; // The response from the server
+    return response.data; 
   } catch (error) {
     console.error("Error creating rendez-vous:", error);
   }

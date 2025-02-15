@@ -301,7 +301,7 @@ const RondezVous = () => {
             telephone: yourInfo.telephone,
           });
 
-          setPatient(createResponse.data);
+          setPatient(createResponse);
           console.log("Created User ----------------------------------------");
           console.log(createResponse);
 
@@ -358,12 +358,16 @@ const RondezVous = () => {
     setStepNumber((prevStep) => prevStep + 1);
   };
 
-  const confirmHandler = () => {
+  const confirmHandler = async() => {
     const requesteRendzVous = {
       patientId: patient?.id,
       salleId: selectedSalle?.id,
       dateHeure: appointmentDate,
       presetationIds: addonOptions.map((option) => option.id),
+      totalAmount: addonOptions
+        .filter(option => option.selected)
+        .reduce((total, option) => total + option.tarif, 0),
+
     };
     console.log(requesteRendzVous);
     setDisplayThankyou(true);
@@ -377,6 +381,12 @@ const RondezVous = () => {
     setShowDownloadLink(true);
 
     setDisplayThankyou(true);
+    try {
+      await createRendezVous(requesteRendzVous);
+      alert("Rendez-vous successfully created!");
+    } catch (error) {
+      console.error("Error creating rendez-vous:", error);
+    }
   };
 
   const selectSalle = (salle) => {
